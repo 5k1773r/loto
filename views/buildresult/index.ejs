@@ -1,0 +1,126 @@
+	<div class="row">
+
+		<h1>Rome wasn't build in a day</h1>
+		<h2>The building block of your fortune</h2>
+		
+		<script type="text/javascript">
+
+			function suggestNumber(inputField) {
+				// clear the suggestion
+				$('#' + inputField.name + '-suggestion').html("");
+				 if(inputField.value != "") {
+					$.post("/BuildResult/getSuggestions",
+						{ 
+							number: inputField.value,
+						  	name: inputField.name,
+						},
+						function(response) {
+							putSuggestionExplanation(response.name, response.amigos, response.stats);
+						}
+					);
+				}
+			}
+
+			function putSuggestionExplanation(name, amigos, stats) {
+				var chaine = "";
+				var explain = "";
+				var maxShown = 0;
+				if(amigos.length > 7) maxShown = 7;
+				for(var i = 0; i < maxShown; i++) {
+					chaine += amigos[i].time + ' time : <a href="#" onclick="showHideExplanation(\'' + amigos[i].key.trim() + '\')">' + amigos[i].key.replace(/-/g, ' ') + '</a> | ';
+					
+					explain += '<div id="' + amigos[i].key + '" style="display:none">';
+					explain += "<div><strong>" + amigos[i].key.replace(/-/g, ' ') + "</strong></div>"; 
+					for(var j in stats[i]) {
+						explain += new Date(stats[i][j].resultDate).toDateString() + " " + stats[i][j].result + "<br>";
+					}
+					explain += "</div>";
+				}
+				// print the suggestion
+				$('#' + name + '-suggestion').html(chaine);
+
+				// Work the stats
+				$('#' + name + '-explanation').html(explain);
+			}
+
+			function showHideExplanation(id) {
+				if($('#' + id).css('display') == "none") 
+					$('#' + id).show('slow');
+				else
+					$('#' + id).hide('slow');
+			}
+
+			$(document).ready(function() {
+			<% 
+				var arrInput = [{
+									id: "first", 
+									label: "First step to heaven",
+								},
+								{
+									id: "second", 
+									label: "In a Second",
+								},
+								{
+									id: "third", 
+									label: "Third gear",
+								},
+								{
+									id: "fourth", 
+									label: "Four motion",
+								},
+								{
+									id: "fifth", 
+									label: "The end is near",
+								},
+								{
+									id: "sixth", 
+									label: "Start dreaming now",
+								},];
+
+
+				for(var i = 0; i < arrInput.length; i++) {
+			%>	
+				$(document).on("change", "#<%= arrInput[i].id %>", function() {
+					suggestNumber({
+						name: $("#<%= arrInput[i].id %>").attr("name"),
+						value: $("#<%= arrInput[i].id %>").val(),
+					});
+				});
+			<%
+				}
+			%>
+			});
+
+		</script>
+
+
+		<form name="prediction-grid" id="prediction-grid" method="post" action="/BuildResult/save">
+
+		<%
+			for(var i = 0; i < arrInput.length; i++) {
+		%>	
+			<div class="form-control">	
+				<input type="text" class="input_xxlarge" name="<%= arrInput[i].id %>" id="<%= arrInput[i].id %>" placeholder="<%= arrInput[i].label %>" >
+				<span name="<%= arrInput[i].id %>-suggestion" id="<%= arrInput[i].id %>-suggestion"></span>
+			</div>
+		<%
+			}
+		%>
+			
+			<div class="form-control">
+				<button type="submit" class="btn btn-inverse" name="save-prediction"><i class="icon-white icon-ok"></i> Save for later work</button>
+				<span name="message" id="message"></span>
+			</div>
+		</form>
+
+		<div>
+		<%
+			for(var i = 0; i < arrInput.length; i++) {
+		%>
+			<span name="<%= arrInput[i].id %>-explanation" id="<%= arrInput[i].id %>-explanation"></span>
+		<%
+			}
+		%>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,241 @@
+	<div class="row">
+
+		<h1>Keep the database to date</h1>
+		<h2> Input result !</h2>
+
+		<script type="text/javascript">
+			function disableOption(nameSelect, optionValue) {
+				var arraySelected = new Array();
+
+				$('#divSelect').children('select').each(
+					function() {
+						if(this.value != "--") {
+							arraySelected.push(this.value);
+						}
+						$("#" + this.id + " option").removeAttr('disabled');
+					}
+				);
+				
+				$('#divSelect').children('select').each(
+					function() {
+						for(var i in arraySelected) {
+							if(this.value != arraySelected[i]) {
+								$("#" + this.id + " option[value=" + arraySelected[i] + "]").attr('disabled','disabled');
+							}
+						}
+					}
+				);
+			}
+
+			function checkSubmission() {
+				var controlOkDate = true;
+				var controlOkSelect = true;
+				var errorMessage = "";
+				
+				// verification de la date du resultat
+				if($('#dateResult').val() == "") {
+					$("#divDataResult").removeClass("success");
+					$("#divDataResult").addClass("error");
+					controlOkDate = false;
+				}
+				else {
+					$("#divDataResult").removeClass("error");
+					$("#divDataResult").addClass("success");
+					
+				}
+
+				// verfication que toutes les boules ont ete saisies
+				$('#divSelect').children('select').each(
+					function() {
+						if(this.value == "0") {
+							$("#divSelect").removeClass("success");
+							$("#divSelect").addClass("error");
+							controlOkSelect = false;
+						}
+						else {
+							if(controlOkSelect) {
+								$("#divSelect").removeClass("error");
+								$("#divSelect").addClass("success");
+							}
+						}
+					}
+				); 
+
+				if(!controlOkDate) { 
+					errorMessage = "Please input the result date";
+				}
+				if(!controlOkSelect) {
+					if(errorMessage != "") {
+						errorMessage += " and all numbers";
+					}
+					else {
+						errorMessage += "Please input the numbers";
+					}
+				}
+				$("#messageInputResult").html(errorMessage);
+				return controlOkDate && controlOkSelect;
+			}
+
+			$(document).ready(function() {
+			    $(".import-readme-tooltip").tooltip({
+			        placement : 'top'
+			    });
+
+			    $(document).on("click", "#submitresult", function() { 
+			    	return checkSubmission();
+			    });
+			<% 
+				var MIN_NUMBER = 1;
+				var MAX_NUMBER = 40;
+				
+				var idNameSelect = new Array("firstBall", "secondBall", "thirdBall", "fourthBall", "fifthBall", "sixthBall");
+				var showSingleFormMessage = false;
+				var styleSingleFormMessage = '';
+				var singleFormMessage = '';
+				var displayFormMessage = 'none';
+
+				for(var i in idNameSelect) {
+
+			%>
+				    $(document).on("change", "#<%= idNameSelect[i] %>", function() {
+						disableOption($("#<%= idNameSelect[i] %>").attr("name"), $("#<%= idNameSelect[i] %>").val());
+					});
+			<%
+				};
+			%>
+			});			
+
+		</script>
+		
+	<%
+
+		if(source == 'single' && messageSuccess != '') {
+			showSingleFormMessage = true;
+			styleSingleFormMessage = 'alert-success';
+			singleFormMessage = messageSuccess;
+			displayFormMessage = 'block';
+		}
+		else if(source == 'single' && messageWarning != '') {
+			showSingleFormMessage = true;
+			styleSingleFormMessage = 'alert-warning';
+			singleFormMessage = messageWarning;
+			displayFormMessage = 'block';
+		}
+		else if(source == 'single' && messageError != '') {
+			showSingleFormMessage = true;
+			styleSingleFormMessage = 'alert-error';
+			singleFormMessage = messageError;
+			displayFormMessage = 'block';
+		}
+	%>
+
+		<div id="alertSingleResult" name="alertSingleResult" class="alert <%= styleSingleFormMessage %>" style="display:<%= displayFormMessage %>">
+	    	<a href="#" class="close" data-dismiss="alert">&times;</a>
+			<strong><%= boldMessage %></strong><%= singleFormMessage %>
+		</div>
+
+		<form method="post" action="/AddResult/create" name="addResult" id="addResult">
+			<div class="control-group" id="divSelect" name="divSelect">
+			<label for="<%= idNameSelect[1] %>">The result was : </label>
+			<%
+				for(var i in idNameSelect) {
+			%>
+				<select id="<%= idNameSelect[i] %>" name="<%= idNameSelect[i] %>"  class="form-control input-small">
+					<option value="0">--</option>
+				<%
+					for(var i = MIN_NUMBER; i <= MAX_NUMBER; i++) {
+				%>
+					<option value="<%= i %>"><%= i %></option>
+				<%
+					}
+				%>
+				</select>
+			<%
+				}
+			%>
+			</div>
+			<div class="control-group " id="divDataResult">
+				<label for="dateResult">On the: </label>
+				<input id="dateResult" name="dateResult" type="date" class="input-large">
+
+				<span class="control-group error" >
+				<button name="submitresult" id="submitresult" type="submit" class="btn form-control btn-inverse" style="margin-bottom: 10px;">Update database</button>
+				<span name="messageInputResult" id="messageInputResult" class="help-inline"></span>
+				</span>
+			</div>
+
+			
+		</form>
+
+
+		<h2> Input results by file !</h2>
+
+		<%
+			var today = new Date();
+			var year = today.getFullYear();
+			var month = today.getMonth() + 1;
+			if(month < 10)
+				month = "0" + month.toString();
+
+			var day = today.getDate();
+			if(day < 10)
+				day = "0" + day.toString();
+
+			var styleImportMessage = '';
+			var importMessage = '';
+			var displayImportMessage = 'none';
+
+			if(source == 'import' && (messageSuccess != '')) {
+				styleImportMessage = 'alert-success';
+				importMessage = messageSuccess;
+				displayImportMessage = 'block';
+			}
+			else if(source == 'import' && (messageWarning != '')) {
+				styleImportMessage = 'alert-warning';
+				importMessage = messageWarning;
+				displayImportMessage = 'block';
+			}
+			else if(source == 'import' && (messageError != '')) {
+				styleImportMessage = 'alert-error';
+				importMessage = messageError;
+				displayImportMessage = 'block';
+			}
+		%>
+
+		<div id="alertImportResult" name="alertImportResult" class="alert <%= styleImportMessage %>" style="display:<%= displayImportMessage %>">
+    		<a href="#" class="close" data-dismiss="alert">&times;</a>
+			<strong><%= boldMessage %></strong><%= importMessage %>
+		</div>
+
+		Remember : 
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="CSV format">File format</a>&nbsp;
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="Date;1;2;3;4;5;6">One header</a>&nbsp;
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="A result by line">A line </a>&nbsp;
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="; character">Data separator</a>&nbsp;
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="date; first number; second number; third number; fourth number;">Result format </a>&nbsp;
+		<a href="#" class="import-readme-tooltip" data-toggle="tooltip" data-original-title="yyyy-mm-dd (ex : <%= year + "-" + month + "-" + day  %>)">Date format !</a>&nbsp;
+		
+		<ul>
+			<li>A line will look like : date;first number;second number;third number;fourth number;fifth number;sixth number;</li>
+			<li>Ex : <%= year + "-" + month + "-" + day  %>;1;12;21;23;33;40</li>
+		</ul>
+
+
+		<form method="post" action="/AddResult/importFile" name="addResultFile" id="addResultFile"  enctype="multipart/form-data">
+		<div class="control-group" input-append>
+		<label for="">Choose file to import :</label>	
+		<input type="file" name="resultFile" id="resultFile" class="input-large">
+
+
+<span class="control-group error">
+				<button name="submitfile" type="submit" class="btn form-control btn-inverse" onclick="">Update greatly database</button>
+				<span name="messageInputFile" id="messageInputFile" class="help-inline"></span>
+			</span>
+					</div>
+
+		
+		</form>
+
+
+	</div>
+</div>

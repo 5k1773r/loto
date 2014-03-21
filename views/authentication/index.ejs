@@ -1,0 +1,41 @@
+<% //authentication/index %>
+
+<div class="container">
+
+	<form class="form-signin" role="form" method="POST" name="authentication" action="/Authentication/verify">
+	<h2 class="form-signin-heading">Sign-in for a pinch of science in loto</h2>
+	<% if(message != "") { %>
+		<div class="control-group error">
+	<% } else {  %>
+		<div class="control-group">
+	<% } %> 
+	
+		<div class="controls">
+			<% if(login != "") { %>
+				<input name="login" type="text" class="input-block-level" id="login" placeholder="Enter login" value=<%= login %> > 
+			<% } else { %>
+				<input name="login" type="text" class="input-block-level" id="login" placeholder="Enter login">
+			 <% } %>
+		    <input name="password" type="password" class="input-block-level" id="password" placeholder="Enter password">
+		 </div>
+<% 
+	if(message != "") { 
+		information = "Incorrect login and/or password. Please try again !"
+	}
+	else {
+		information = " "
+	}
+%>
+<span class="help-inline"><%= information %></span>
+	</div>
+
+    <!--<label class="checkbox">
+         <input name="rememberinfo" type="checkbox"> Remember me 
+      </label> -->
+      <button name="submitauthentication" type="submit" class="btn btn-block btn-inverse">Let me in !</button>
+
+	</form>
+
+</div>
+
+ 

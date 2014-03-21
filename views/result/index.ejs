@@ -1,0 +1,39 @@
+<div class="row">
+
+	<h1>My First View</h1>
+	<h2> Lert's get some foo</h2>
+	
+
+
+	<table class="table">
+	<tr>
+		<th>Date tirage</th>
+		<th>Premier num&eacute;ro</th>
+		<th>Second num&eacute;ro</th>
+		<th>Troisi&egrave;me nu&eacute;ro</th>
+		<th>Quatri&egrave;me num&eacute;ro</th>
+		<th>Cinqui&egrave;me num&eacute;ro</th>
+		<th>Sixi&egrave;me num&eacute;ro</th>
+	</tr>
+	<% 	for(result in foo) {  %>
+	<tr>
+		<td><%= foo[result].resultDate.toDateString() %></td>
+		<td><%= foo[result].firstNumber %></td>
+		<td><%= foo[result].secondNumber %></td>
+		<td><%= foo[result].thirdNumber %></td>
+		<td><%= foo[result].fourthNumber %></td>
+		<td><%= foo[result].fifthNumber %></td>
+		<td><%= foo[result].sixthNumber %></td 
+	</tr>
+
+
+	<% } %>
+	</table>
+	<div class="btn-group pull-right" >
+	    <button type="button" class="btn btn-inverse" id="showAllResult">All</button>
+	    <button type="button" class="btn btn-inverse" id="previous20">Previous 20</button>
+	    <button type="button" class="btn btn-inverse" id="next20">Next 20</button>
+	</div>
+
+</div>
+</div>

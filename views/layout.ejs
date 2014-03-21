@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--
+        For demonstration purposes, the `title` is dynamically set here based on
+        your `sails.config.appName` to show that you can inject data into layouts
+        exactly the same way as with your other view templates.
+    -->
+    <title><%- title %></title>
+
+    <!-- Viewport mobile tag for sensible mobile support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <!--
+
+      Stylesheets
+      ========================
+
+      You can link any CSS, LESS, or image files in your `assets` directory
+      as you would normally: using <link/> tags.
+      
+    -->
+
+    <!-- Bootstrap -->
+    <link href="/styles/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!--
+
+      Support for LESS included by default
+      ================================================
+
+      LESS files are automatically compiled when they change using the Gruntfile
+      located in the top-level of this Sails app.  If you run into issues with styles
+      not reloading, check the Sails log output in your console for LESS compilation errors.
+      If necessary, shut down and then lift your app again.
+      
+    -->
+
+  </head>
+
+  <body>
+    <div class="container">
+          <% if(req.session.authenticated) { 
+
+              var functionnality = new Array(
+                { 
+                  label: "Dashboard", 
+                  url: "Dashboard", 
+                },
+                {
+                  label: "Workroom", 
+                  url: "BuildResult",
+                },
+                { 
+                  label: "Results history", 
+                  url: "Result",
+                },
+                {
+                  label: "Add result",
+                  url: "AddResult",
+                }); 
+             %> 
+              
+
+          <div class="row"><br>
+            <div class="navbar navbar-top navbar-inverse"> 
+              <div class="navbar-inner"> 
+                <div class="container"> 
+                  <span class="brand active">Loto MRU</span> 
+                  <ul class="nav"> 
+                    <%
+                      for(var i = 0; i < functionnality.length; i++) { 
+                        if (req.url == "/" + functionnality[i].url) { %>
+                          <li class="active">
+                    <% 
+                        }
+                        else {  %>
+                          <li class="">
+                    <% } %>
+                            <a href="<%= "/" + functionnality[i].url %>" > <%= functionnality[i].label %> </a> 
+                          </li>
+                    <% } %> 
+                  </ul> 
+                  <ul class="nav pull-right"> 
+                    <li class="dropdown"> 
+                      <a id="account" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"> 
+                        <i class="icon-user icon-white"></i> 
+                          <span>Welcome <%= req.session.login %></span> 
+                        <b class="caret"></b> 
+                      </a> 
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="account"> 
+                        <li>
+                          <a href="/Authentication/logout">Logout</a>
+                        </li> 
+                      </ul> 
+                    </li> 
+                  </ul> 
+                </div> 
+              </div> 
+            </div> 
+          </div>
+
+      <% } %>
+
+
+
+
+
+    
+
+
+
+
+    <!--
+
+      Client-side Javascript
+      ========================
+
+      You can import any js files in your `assets` directory as you would 
+      normally: using <script></script> tags.
+
+      Here's an example of importing a few dependencies, in order:
+    -->
+    <!-- Bring in the socket.io client -->
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+    <!-- then beef it up with some convenience logic for talking to Sails.js -->
+    <script type="text/javascript" src="/js/sails.io.js"></script>
+    <!-- listen on socket.io for incoming messages -->
+    <script type="text/javascript" src="/js/app.js"></script>
+
+    <!-- Your scripts here? -->
+    <!-- Your scripts here? -->
+    <!-- Your scripts here? -->
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- <script src="https://code.jquery.com/jquery.js"></script> -->
+    <script src="/js/jquery-2.1.0.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/js/bootstrap.min.js"></script>
+
+    <!--
+
+      Looking for client-side CoffeeScript or TypeScript?
+      ================================================
+
+      CoffeeScript and TypeScript precompilation are not installed by default,
+      but if you'd like to mix those features in, it is straightforward to
+      `npm install` the relevant grunt community modules and modify your Gruntfile
+      to use them.
+
+    -->
+
+
+    <!--
+
+      Another way: The Asset Linker
+      ========================
+
+      Sails supports a Grunt-based asset linker, to automatically inject 
+      <link> and <script> tags, as well any client-side templates you're using
+      into your HTML layouts and views, respecting dependencies.
+
+      You created this Sails app with the asset linker disabled.
+      If you change your mind, check out the docs on the subject:
+      http://sailsjs.org/#!documentation/asset-management
+
+    -->
+
+    <!-- Include the view file for the current controller/route -->
+    <%- body %>
+
+
+
+    </body>
+</html>
