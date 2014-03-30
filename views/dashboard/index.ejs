@@ -1,0 +1,173 @@
+<link href="/styles/odometer-theme-default.css" rel="stylesheet"/>
+<script src="/js/odometer.min.js"></script>
+
+
+<script src="/js/highcharts/highcharts.js"></script>
+<script type="text/javascript">
+    var xaxisLabel = [];
+    var yaxisValue = [];
+
+    <%
+        var sortValue = [];
+        for(i in xaxis) {
+            sortValue.push({
+                label: xaxis[i],
+                ball: xaxis[i].replace("no","").trim(),
+                value: data[xaxis[i]]
+            });
+    %>
+        xaxisLabel.push("<%= xaxis[i]%>");
+        yaxisValue.push(<%= data[xaxis[i]]%>);
+
+    <%
+        }
+
+        sortValue.sort(function(first, second) {
+            var parseFirst = parseInt(first.value);
+            var parseSecond = parseInt(second.value);
+            var resultSort = null;
+            if(parseFirst < parseSecond)
+                resultSort =  1;
+            if(parseFirst > parseSecond)
+                resultSort = -1;
+            if(parseFirst == parseSecond) {
+                var firstBall = parseInt(first.ball);
+                var secondBall = parseInt(second.ball);
+                if(firstBall < secondBall)
+                    return -1;
+                if(firstBall > secondBall)
+                    return 1;
+                resultSort = 0;
+            }
+
+
+            return resultSort;
+        });
+
+    %>
+
+    $(function () {
+        $('#container').highcharts({
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: 'Ball frequencies'
+            },
+            subtitle: {
+                text: 'Trying to spot tendencies'
+            },
+            xAxis: {
+                categories: xaxisLabel
+            },
+            yAxis: {
+                title: {
+                    text: 'Frequency'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+              enabled: true,
+                formatter: function() {
+                    return '<b>'+ this.series.name +'</b><br/>'+
+                            this.x +': '+ this.y + ' times';
+                }
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: true,
+                        style: {
+                            textShadow: '0 0 3px white, 0 0 3px white'
+                        }
+                    },
+                    enableMouseTracking: true
+                }
+            },
+            series: [{
+                name: 'Number frequency',
+                data: yaxisValue
+            }/*, {
+                name: 'London',
+                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+            }*/]
+        });
+    });
+
+
+    <%
+        for(i in sortValue) {
+    %>
+            setTimeout(function(){
+                $("#odometer_<%= sortValue[i].label %>").html(<%= sortValue[i].ball %>);
+            }, 1000);
+    <%
+        }
+    %>
+
+
+    </script>
+
+
+<div class="row">
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    <!-- 13 / 14 / 13 -->
+
+    <table class="table">
+        <%
+            var tendency = [{
+                arrLabel: "Hot numbers",
+                rep: 13
+            },
+            {
+                arrLabel: "Mild numbers",
+                rep: 14},
+            {
+                arrLabel: "Cold numbers",
+                rep: 13
+            }];
+            var counter = 0;
+            for(i in tendency) {
+        %>
+            <% if(i == 0) { %>
+                <tr class="error">
+            <% } %>
+            <% if(i == 1) { %>
+                <tr class="warning">
+            <% } %>
+            <% if(i == 2) { %>
+                <tr class="info">
+            <% } %>
+
+            <td class="span2">
+            <%= tendency[i].arrLabel %> :
+            </td>
+            <% for(var j = counter; j < counter + tendency[i].rep; j++) { %>
+            <td class="span2">
+                <div id="odometer_<%= sortValue[j].label %>" class="odometer">0</div>
+            </td>
+
+
+            <%
+                }
+
+
+            if(tendency[i].rep == 13) {
+            %>
+            <td class="span2"></td>
+            <%
+            }
+
+                counter = counter + tendency[i].rep;
+            %>
+
+        </tr>
+        <% } %>
+    </table>
+</div>
+</div>
