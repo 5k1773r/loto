@@ -25,7 +25,7 @@
 				var chaine = "";
 				var explain = "";
 				var maxShown = 0;
-				if(amigos.length > 7) maxShown = 7;
+				if(amigos.length > 5) maxShown = 5;
 				for(var i = 0; i < maxShown; i++) {
 					chaine += amigos[i].time + ' time : <a href="#" onclick="showHideExplanation(\'' + amigos[i].key.trim() + '\')">' + amigos[i].key.replace(/-/g, ' ') + '</a> | ';
 					

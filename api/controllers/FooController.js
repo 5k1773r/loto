@@ -22,7 +22,14 @@ var util = require("util");
 		var foo = req.param('foo');
 		res.end(util.inspect(req));
 
-		//ball = require("Ball.js");
+
+        Result.find().sum(["no1", "no2"]).done(function(err, result) {
+          if(err) console.log(err);
+
+          console.log(util.inspect(result, false, null));
+        });
+
+
 
 		 return res.view({
                 foo: [{name: 'Foo Fighters'}, {name: 'Dave Grohl'}]

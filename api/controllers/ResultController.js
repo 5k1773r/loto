@@ -15,101 +15,87 @@
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
 
-var ResultController = {
+module.exports = {
 
 	index : function(req, res) {
-		var resultCreateResult;
-		Result.find().done(function(err, arrayResult) {
-			if(err) {
-				return;
-			}
-			console.log(arrayResult);
-			return res.view({
-                foo: arrayResult,
-                machine : { id : 'tatata'}
+        var page = 1;
+        var maxPage = 1;
+
+        if(typeof req.param('page') != "undefined") page = req.param('page');
+        if(typeof req.param('maxPage') != "undefined") maxPage = req.param('maxPage');
+
+
+        if(req.param('action') != "undefined") {
+            if(req.param('action') == "previous") {
+                    if(page > 1)
+                        page = parseInt(page) - 1;
+            }
+            if(req.param('action') == "next") {
+                if(page < maxPage)
+                    page = parseInt(page) + 1;
+            }
+        }
+
+        Result.count().done(function(err, numberResult) {
+            if(err) return err;
+
+            console.log("numberResult ---> " + numberResult);
+
+
+            Result.find().paginate({page: page, limit: 10}).done(function(err, arrayResult) {
+                if(err) return err;
+
+                //var util = require("util");
+                //console.log(util.inspect(arrayResult, false, null));
+
+                if(req.isAjax) {
+                    return res.json({
+                        resultData: arrayResult,
+                        params : {
+                            showAll: false,
+                            page: page,
+                            maxPage: Math.ceil(numberResult / 10)
+
+                        }
+                    });
+                }
+                else {
+                    //console.log(arrayResult);
+                    return res.view({
+                        resultData: arrayResult,
+                        params : {
+                            showAll: false,
+                            page: page,
+                            maxPage: Math.ceil(numberResult / 10)
+                        }
+                    });
+                }
             });
-		});
+        });
 	},
 
 
-	create : function(req, res) {
-		//var req.param();
-
-		var TYPE = "resultatLoto";
-		var MAX_NUMBER = 40;
-
-		var dateInsert = new Date();	
-
-
-		var firstNumber = 1;
-		var secondNumber = 2;
-		var thirdNumber = 3;
-		var fourthNumber = 4;
-		var fifthNumber = 5;
-		var sixthNumber = 6;
-
-
-		var insertion = new Object();
-	    insertion['name'] = "Tirage" + dateInsert.toISOString();
-	    insertion['resultDate'] = dateInsert;
-	    insertion['type'] = TYPE;
-	    
-	    insertion['firstNumber'] = 11;
-	    insertion['secondNumber'] = 12;
-	    insertion['thirdNumber'] = 13;
-	    insertion['fourthNumber'] = 14;
-	    insertion['fifthNumber'] = 15;
-	    insertion['sixthNumber'] = 16;
-
-	    /*insertion['no' + firstNumber] = 1;
-	    insertion['no' + secondNumber] = 1;
-	    insertion['no' + thirdNumber] = 1;
-	    insertion['no' + fourthNumber] = 1;
-	    insertion['no' + fifthNumber] = 1;
-	    insertion['no' + sixthNumber] = 1;
-
-	    for(var i = 1; i <= MAX_NUMBER; i++) {
-	      if(insertion['no' + i] == null) {
-	        insertion['no' + i] = 0;
-	      }
-	    }
-	    */
-
-
-		Result.create(insertion).done(function(err, result) {
-			if(!err) {
-				console.log(result);
-				 return res.view('result/index',
-				 		{
-		                	machine: "Create",
-		                	foo: [result],
-
-		            	});
-			}
-			else {
-				return ;
-			}
-		});
+	showAll : function(req, res) {
+        Result.find().done(function(err, arrayResult) {
+            if(err) {
+                return;
+            }
+            //console.log(arrayResult);
+            return res.view("result/index", {
+                resultData: arrayResult,
+                params: {
+                    showAll: true,
+                    page: 0
+                }
+            });
+        });
 	},
 
-}
 
-module.exports = ResultController;
+    /**
+     * Overrides for the settings in `config/controllers.js`
+     * (specific to ResultController)
+     */
+     _config: {}
 
-
-
-/*
-module.exports = {
-    
-  
-
-
-  /**
-   * Overrides for the settings in `config/controllers.js`
-   * (specific to ResultController)
-   *//*
-  _config: {}
-
-  
 };
-*/

@@ -1,39 +1,192 @@
+<script type="text/javascript">
+
+    // TODO faire un tableau d'objet
+    var dataShown = [
+        "resultDate",
+        "firstNumber",
+        "secondNumber",
+        "thirdNumber",
+        "fourthNumber",
+        "fifthNumber",
+        "sixthNumber"
+    ];
+
+    var arrHeader = [
+        "Date tirage",
+        "Premier numéro",
+        "Second numéro",
+        "Troisième numéro",
+        "Quatrième numéro",
+        "Cinquième numéro",
+        "Sixième numéro"
+    ];
+
+    $(document).ready(function() {
+        $(document).on("click", "#showAllResult", function() {
+            $(location).attr('href','/Result/showAll');
+
+        });
+
+        $(document).on("click", "#compact", function() {
+            $(location).attr('href','/Result');
+        });
+
+        $(document).on("click", "#previous10", function() {
+            $.post("/Result",
+                    {
+                        page: $("#page").val(),
+                        maxPage: $("#maxPage").val(),
+                        action: "previous"
+                    },
+                    function(response) {
+                        presentNewData(response);
+                    },
+                    "json");
+        });
+
+        $(document).on("click", "#next10", function() {
+            $.post("/Result",
+                    {
+                        page: $("#page").val(),
+                        maxPage: $("#maxPage").val(),
+                        action: "next"
+                    },
+                    function(response) {
+                        presentNewData(response);
+                    },
+                    "json");
+
+        });
+    });
+
+
+
+    function presentNewData(response) {
+        $("#resultTable").html(buildTable(response.resultData, arrHeader, dataShown, "resultDate"));
+        $("#page").val(response.params.page);
+        $("#maxPage").val(response.params.maxPage);
+
+        if(response.params.page == 1)
+            $("#previous10").prop('disabled', true);
+        else
+            $("#previous10").prop('disabled', false);
+
+        if(response.params.page == response.params.maxPage)
+            $("#next10").prop('disabled', true);
+        else
+            $("#next10").prop('disabled', false);
+    }
+
+
+    function buildTable(arrData, arrHeader, dataShown, toStringField) {
+        // create elements <table> and a <tbody>
+        var tbl     = document.createElement("table");
+        var tblHead = document.createElement("thead");
+        var tblBody = document.createElement("tbody");
+
+        var rowHead = document.createElement("tr");
+        for(i = 0; i < arrHeader.length; i++) {
+            var cell = document.createElement("th");
+            var cellText = document.createTextNode(arrHeader[i]);
+
+            cell.appendChild(cellText);
+            rowHead.appendChild(cell);
+        }
+        tblHead.appendChild(rowHead);
+
+        // cells creation
+        for (var j = 0; j < arrData.length; j++) {
+            // table row creation
+            var row = document.createElement("tr");
+
+            for (var i in dataShown) {
+                // create element <td> and text node
+                //Make text node the contents of <td> element
+                // put <td> at end of the table row
+                var cell = document.createElement("td");
+                var cellText;
+
+                if(dataShown[i] != toStringField)
+                    cellText = document.createTextNode(arrData[j][dataShown[i]]);
+                else
+                    cellText = document.createTextNode(new Date(arrData[j][dataShown[i]]).toDateString());
+
+                cell.appendChild(cellText);
+                row.appendChild(cell);
+            }
+
+            //row added to end of table body
+            tblBody.appendChild(row);
+        }
+
+        // append the <tbody> inside the <table>
+        tbl.appendChild(tblHead);
+        tbl.appendChild(tblBody);
+        tbl.setAttribute("class", "table");
+        return tbl;
+    }
+
+</script>
+
 <div class="row">
 
-	<h1>My First View</h1>
-	<h2> Lert's get some foo</h2>
-	
+    <h1>Previous results</h1>
+    <h2>History is the building blocks of future</h2>
+
+    <div id="resultTable">
+
+        <table class="table">
+            <tr>
+                <th>Date tirage</th>
+                <th>Premier num&eacute;ro</th>
+                <th>Second num&eacute;ro</th>
+                <th>Troisi&egrave;me num&eacute;ro</th>
+                <th>Quatri&egrave;me num&eacute;ro</th>
+                <th>Cinqui&egrave;me num&eacute;ro</th>
+                <th>Sixi&egrave;me num&eacute;ro</th>
+            </tr>
+            <% 	for(result in resultData) {  %>
+            <tr>
+                <td><%= resultData[result].resultDate.toDateString() %></td>
+                <td><%= resultData[result].firstNumber %></td>
+                <td><%= resultData[result].secondNumber %></td>
+                <td><%= resultData[result].thirdNumber %></td>
+                <td><%= resultData[result].fourthNumber %></td>
+                <td><%= resultData[result].fifthNumber %></td>
+                <td><%= resultData[result].sixthNumber %></td>
+            </tr>
 
 
-	<table class="table">
-	<tr>
-		<th>Date tirage</th>
-		<th>Premier num&eacute;ro</th>
-		<th>Second num&eacute;ro</th>
-		<th>Troisi&egrave;me nu&eacute;ro</th>
-		<th>Quatri&egrave;me num&eacute;ro</th>
-		<th>Cinqui&egrave;me num&eacute;ro</th>
-		<th>Sixi&egrave;me num&eacute;ro</th>
-	</tr>
-	<% 	for(result in foo) {  %>
-	<tr>
-		<td><%= foo[result].resultDate.toDateString() %></td>
-		<td><%= foo[result].firstNumber %></td>
-		<td><%= foo[result].secondNumber %></td>
-		<td><%= foo[result].thirdNumber %></td>
-		<td><%= foo[result].fourthNumber %></td>
-		<td><%= foo[result].fifthNumber %></td>
-		<td><%= foo[result].sixthNumber %></td 
-	</tr>
+            <% } %>
+        </table>
+    </div>
+    <!-- <spanclass="btn-group pull-right error" >dfgdgdgdgd</span> -->
+    <div class="btn-group pull-right" >
+        <input type="hidden" id="page" value="<%= params.page %>" />
+        <input type="hidden" id="maxPage" value="<%= params.maxPage %>" />
+        <%
+            if(!params.showAll) {
+        %>
+        <button type="button" class="btn btn-inverse" id="showAllResult">All</button>
+        <% if(params.page == 1) { %>
+            <button type="button" class="btn btn-inverse" id="previous10" disabled>Previous 10</button>
+        <% } else { %>
+            <button type="button" class="btn btn-inverse" id="previous10">Previous 10</button>
+        <% } %>
 
+        <% if(params.page == params.maxPage) { %>
+            <button type="button" class="btn btn-inverse" id="next10" disabled>Next 10</button>
+        <% } else { %>
+            <button type="button" class="btn btn-inverse" id="next10">Next 10</button>
+        <% } %>
 
-	<% } %>
-	</table>
-	<div class="btn-group pull-right" >
-	    <button type="button" class="btn btn-inverse" id="showAllResult">All</button>
-	    <button type="button" class="btn btn-inverse" id="previous20">Previous 20</button>
-	    <button type="button" class="btn btn-inverse" id="next20">Next 20</button>
-	</div>
+        <% }
+        else {
+        %>
+        <button type="button" class="btn btn-inverse" id="compact">Compact</button>
+        <% } %>
+    </div>
+
 
 </div>
 </div>

@@ -1,4 +1,7 @@
-	<div class="row">
+<link href="/styles/datepicker.css" rel="stylesheet"/>
+<script src="/js/datepicker/js/bootstrap-datepicker.js"></script>
+
+<div class="row">
 
 		<h1>Keep the database to date</h1>
 		<h2> Input result !</h2>
@@ -34,13 +37,13 @@
 				
 				// verification de la date du resultat
 				if($('#dateResult').val() == "") {
-					$("#divDataResult").removeClass("success");
-					$("#divDataResult").addClass("error");
+					$('#divDataResult').removeClass("success").addClass("error");;
+					//$('#divDataResult').addClass("error");
 					controlOkDate = false;
 				}
 				else {
-					$("#divDataResult").removeClass("error");
-					$("#divDataResult").addClass("success");
+					$("#divDataResult").removeClass("error").addClass("success");
+					//$("#divDataResult").addClass("success");
 					
 				}
 
@@ -48,14 +51,14 @@
 				$('#divSelect').children('select').each(
 					function() {
 						if(this.value == "0") {
-							$("#divSelect").removeClass("success");
-							$("#divSelect").addClass("error");
+							$("#divSelect").removeClass("success").addClass("error");
+							//$("#divSelect").addClass("error");
 							controlOkSelect = false;
 						}
 						else {
 							if(controlOkSelect) {
-								$("#divSelect").removeClass("error");
-								$("#divSelect").addClass("success");
+								$("#divSelect").removeClass("error").addClass("success");
+								//$("#divSelect").addClass("success");
 							}
 						}
 					}
@@ -81,12 +84,25 @@
 			        placement : 'top'
 			    });
 
-			    $(document).on("click", "#submitresult", function() { 
-			    	return checkSubmission();
+                $(document).on("click", "#submitresult", function() {
+                    return checkSubmission();
+                });
+
+			    $(document).on("click", "#chooseFile", function() {
+			    	$("#resultFile").click();
 			    });
+
+                $(document).on("change", "#resultFile", function() {
+                    $("#resultFileName").val($("#resultFile").val());
+                });
+
+                $(document).on("click", "#submitfile", function() {
+                    if($("#resultFile").val() == "") return false;
+                });
+
 			<% 
-				var MIN_NUMBER = 1;
-				var MAX_NUMBER = 40;
+				var MIN_NUMBER = sails.config.configLoto.MIN_NUMBER;
+				var MAX_NUMBER = sails.config.configLoto.MAX_NUMBER;
 				
 				var idNameSelect = new Array("firstBall", "secondBall", "thirdBall", "fourthBall", "fifthBall", "sixthBall");
 				var showSingleFormMessage = false;
@@ -103,12 +119,16 @@
 			<%
 				};
 			%>
-			});			
+
+
+                $(function() {
+                    $( "#dateResult" ).datepicker({});
+                });
+			});
 
 		</script>
 		
 	<%
-
 		if(source == 'single' && messageSuccess != '') {
 			showSingleFormMessage = true;
 			styleSingleFormMessage = 'alert-success';
@@ -155,12 +175,13 @@
 			%>
 			</div>
 			<div class="control-group " id="divDataResult">
-				<label for="dateResult">On the: </label>
-				<input id="dateResult" name="dateResult" type="date" class="input-large">
+				<label for="dateResult">Date : </label>
+				 <!-- <input id="dateResult" name="dateResult" type="date" class="input-large"> -->
+                 <input id="dateResult" name="dateResult" type="text" class="input-large" placeholder="Date of Result">
 
 				<span class="control-group error" >
-				<button name="submitresult" id="submitresult" type="submit" class="btn form-control btn-inverse" style="margin-bottom: 10px;">Update database</button>
-				<span name="messageInputResult" id="messageInputResult" class="help-inline"></span>
+				    <button name="submitresult" id="submitresult" type="submit" class="btn form-control btn-inverse" style="margin-bottom: 10px;">Update database</button>
+				    <span name="messageInputResult" id="messageInputResult" class="help-inline"></span>
 				</span>
 			</div>
 
@@ -222,18 +243,22 @@
 
 
 		<form method="post" action="/AddResult/importFile" name="addResultFile" id="addResultFile"  enctype="multipart/form-data">
-		<div class="control-group" input-append>
-		<label for="">Choose file to import :</label>	
-		<input type="file" name="resultFile" id="resultFile" class="input-large">
+            <span class="control-group input-append">
+            <label for="resultFileName">Choose file to import :</label>
+            <input type="file" name="resultFile" id="resultFile" style="display:none">
+            <input type="text" name="resultFileName" id="resultFileName" class="input-large span4" readonly="true" placeholder="Choose file">
+            <button name="chooseFile" id="chooseFile" type="button" class="btn form-control btn-inverse">Browse</button>
+            </span>
+
+            <span class="control-group error">
+
+                    <button name="submitfile" id="submitfile" type="submit" class="btn form-control btn-inverse" style="margin-top: 15px;">Update greatly database</button>
+                    <span name="messageInputFile" id="messageInputFile" class="help-inline"></span>
+                </span>
+            </span>
 
 
-<span class="control-group error">
-				<button name="submitfile" type="submit" class="btn form-control btn-inverse" onclick="">Update greatly database</button>
-				<span name="messageInputFile" id="messageInputFile" class="help-inline"></span>
-			</span>
-					</div>
 
-		
 		</form>
 
 
