@@ -8,6 +8,16 @@
     var yaxisValue = [];
 
     <%
+        var MIN_NUMBER = sails.config.configLoto.MIN_NUMBER;
+		var MAX_NUMBER = sails.config.configLoto.MAX_NUMBER;
+
+        // gestion d'absence de données
+        if(data.length == 0) {
+            for(var i = MIN_NUMBER; i <= MAX_NUMBER; i++) {
+                data["no" + i] = 0;
+            }
+        }
+
         var sortValue = [];
         for(i in xaxis) {
             sortValue.push({
