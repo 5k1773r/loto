@@ -34,7 +34,7 @@ module.exports = {
           if(i < MAX_NUMBER) generateColumn(i + 1);
       }) (i);
 
-      console.log(stringColumns.toString());
+      //console.log(stringColumns.toString());
 
       //Result.find().sum(["no1", "no2"]).done(function(err, result) {
       Result.find().sum(stringColumns).done(function(err, result) {
@@ -42,11 +42,19 @@ module.exports = {
 
 
           var util = require("util");
-          console.log(util.inspect(result, false, null));
+          //console.log(util.inspect(result, false, null));
+
+          var arrResult;
+          if(result.length > 0) {
+              arrResult = result[0]; // sum => un seul enregistrement
+          }
+          else {
+              arrResult = [];
+          }
 
           return res.view("dashboard/index", {
             xaxis: stringColumns,
-            data: result[0] // sum => un seul enregistrement
+            data: arrResult
           });
       });
 
