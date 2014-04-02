@@ -136,6 +136,11 @@
     <div id="resultTable">
 
         <table class="table">
+
+            <%
+                if(resultData.length > 0) {
+
+            %>
             <tr>
                 <th>Date tirage</th>
                 <th>Premier num&eacute;ro</th>
@@ -145,7 +150,9 @@
                 <th>Cinqui&egrave;me num&eacute;ro</th>
                 <th>Sixi&egrave;me num&eacute;ro</th>
             </tr>
-            <% 	for(result in resultData) {  %>
+            <%
+                for(result in resultData) {
+            %>
             <tr>
                 <td><%= resultData[result].resultDate.toDateString() %></td>
                 <td><%= resultData[result].firstNumber %></td>
@@ -157,7 +164,14 @@
             </tr>
 
 
+            <%
+            }
+            }
+            else {
+            %>
+                <tr><td class="span6">No result found</td></tr>
             <% } %>
+
         </table>
     </div>
     <!-- <spanclass="btn-group pull-right error" >dfgdgdgdgd</span> -->
