@@ -27,11 +27,11 @@ module.exports = {
 
         if(req.param('action') != "undefined") {
             if(req.param('action') == "previous") {
-                    if(page > 1)
+                    if(parseInt(page) > 1)
                         page = parseInt(page) - 1;
             }
             if(req.param('action') == "next") {
-                if(page < maxPage)
+                if(parseInt(page) < parseInt(maxPage))
                     page = parseInt(page) + 1;
             }
         }
@@ -42,7 +42,7 @@ module.exports = {
             console.log("numberResult ---> " + numberResult);
 
 
-            Result.find().paginate({page: page, limit: 10}).done(function(err, arrayResult) {
+            Result.find().sort({ resultDate: 'desc' }).paginate({page: page, limit: 10}).done(function(err, arrayResult) {
                 if(err) return err;
 
                 //var util = require("util");
@@ -76,7 +76,7 @@ module.exports = {
 
 
 	showAll : function(req, res) {
-        Result.find().done(function(err, arrayResult) {
+        Result.find().sort({ resultDate: 'desc' }).done(function(err, arrayResult) {
             if(err) {
                 return;
             }
