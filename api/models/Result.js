@@ -263,7 +263,7 @@ var Result = {
         //var MIN_NUMBER = conf.configLoto.MIN_NUMBER;
         var MAX_NUMBER = conf.configLoto.MAX_NUMBER;
 
-        console.log("Inside Model Result : beforeCreate");
+        //console.log("Inside Model Result : beforeCreate");
 
         values['no' + values.firstNumber] = 1;
         values['no' + values.secondNumber] = 1;
@@ -282,18 +282,19 @@ var Result = {
     },
 
     afterCreate : function(result, next) {
-        console.log("Inside Model Result : afterCreate");
+        /*console.log("Inside Model Result : afterCreate");
 
 // var util = require('util');
 // console.log(util.inspect(result, false, null));
 
-        var arrResult = [result.firstNumber, result.secondNumber, result.thirdNumber, result.fourthNumber, result.fifthNumber, result.sixthNumber];
+        var arrResult = [result.firstNumber, result.secondNumber, result.thirdNumber,
+            result.fourthNumber, result.fifthNumber, result.sixthNumber];
 
         var ball = [];
         Ball.split(arrResult, ball, function() {
             console.log('finished ' + ball.length);
             var i = 0;
-            (function createBall(i){
+            (function createBall(i) {
                 Ball.findOne({
                     key: ball[i].min + '-' + ball[i].med + '-' + ball[i].max
                 }).done(function(err, ballFound) {
@@ -301,12 +302,13 @@ var Result = {
                             console.log(err);
                         }
                         else {
+                            console.log("======> " + typeof ballFound);
                             if(typeof ballFound == 'undefined') {
                                 Ball.create(ball[i]).done(function(err, inserted) {
                                     if(err) console.log(err);
-                                    console.log("Ball " + inserted.key + "created !");
+                                    //console.log("Ball " + inserted.key + "created !");
                                 });
-                            }
+                           }
                             else {
                                 ballFound.time++;
                                 ballFound.save(function(err) {
@@ -319,13 +321,15 @@ var Result = {
                 if(i < ball.length - 1) createBall(i + 1);
             })(i);
         });
-
+*/
         next();
     },
 
-    insertResult : function(reqData, viewSuccess, objSuccess, objError, objAlready, viewError, res) {
+    insertResult : function(reqData, viewSuccess, objSuccess, objError, objAlready, viewError, res, func) {
 
-        if(((reqData.paramDateOfResult == null) && (reqData.arrResult.indexOf(null) != -1)) || (reqData.dateOfResult == "Invalid Date")) {
+        if(((reqData.paramDateOfResult == null) && (reqData.arrResult.indexOf(null) != -1))
+            || (reqData.dateOfResult == "Invalid Date")) {
+            console.log("Invalid Date");
             return res.view(viewSuccess, objError);
             /*return {
              view: viewSuccess,
@@ -352,10 +356,11 @@ var Result = {
 
             var i = 0;
             (function hasDoublon(i) {
-                console.log("Dans checkDoublon : " + i);
+                //console.log("Dans checkDoublon : " + i);
                 var tmpBall = arrResultSorted[i];
 
                 if(!(tmpBall >= MIN_NUMBER && tmpBall <= MAX_NUMBER && tmpBall != arrResultSorted[i + 1])) {
+                    console.log("Invalid Number");
                     return res.view(viewSuccess, objError);
                     /*return {
                      view: viewSuccess,
@@ -373,7 +378,7 @@ var Result = {
             objectResult.find({
                 name : "Tirage" + reqData.dateOfResult.toISOString()
             }).done(function(err, arrayResult) {
-                    console.log("ICI dans find");
+                    //console.log("ICI dans find");
                     if(err) {
                         return res.view(viewError, {});
                         /*return {
@@ -382,7 +387,7 @@ var Result = {
                          };*/
                     }
                     if(arrayResult.length != 0) {
-                        console.log("Resultat ignore car deja present BDD");
+                        //console.log("Resultat ignore car deja present BDD");
                         return res.view(viewSuccess, objAlready);
                     }
 
@@ -402,7 +407,8 @@ var Result = {
                     objectResult.create(resultLine).done(function(err, result) {
                         if(!err) {
                             // la creation de la ligne s'est bien passée
-                            console.log("Result successfully created " + result);
+                            //console.log("Result successfully created " + result);
+                            func();
 
                             return res.view(viewSuccess, objSuccess);
                             /*return {
@@ -423,7 +429,6 @@ var Result = {
         }
 
     }
-
 };
 
 module.exports = Result;
