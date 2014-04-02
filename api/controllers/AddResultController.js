@@ -28,126 +28,20 @@ module.exports = {
         var MIN_NUMBER = sails.config.configLoto.MIN_NUMBER;
         var MAX_NUMBER = sails.config.configLoto.MAX_NUMBER;
 
-        /*
 
-        var paramDateOfResult = req.param('dateResult');
-        var dateOfResult = new Date(paramDateOfResult);
         var arrResult = [req.param('firstBall'), req.param('secondBall'),
             req.param('thirdBall'), req.param('fourthBall'), req.param('fifthBall'), req.param('sixthBall')];
 
-        var returnParameters = {
-            source: 'single',
-            boldMessage: '',
-            messageSuccess: '',
-            messageWarning: '',
-            messageError: ''
-        };
-
-        var view = "addresult/index";
-
-
-
-        if(((paramDateOfResult == null) && (arrResult.indexOf(null) != -1)) || (dateOfResult == "Invalid Date")) {
-            returnParameters.boldMessage = 'You should check your inputs';
-            returnParameters.messageError = '- The result has either already been added or is incorrect !';
-
-            return res.view(view, returnParameters);
-        }
-        else {
-            // 7 donnees non vides
-            var arrResultSorted = arrResult.slice(0);
-
-            arrResultSorted.sort(function(first, second) {
-                var parseFirst = parseInt(first);
-                var parseSecond = parseInt(second);
-
-                var result = null;
-                if(parseFirst < parseSecond)
-                    result = -1;
-                if(parseFirst > parseSecond)
-                    result = 1;
-                if(parseFirst == parseSecond)
-                    result = 0;
-                return result;
-            });
-
-            var i = 0;
-            (function hasDoublon(i) {
-                console.log("Dans checkDoublon : " + i);
-                var tmpBall = arrResultSorted[i];
-
-                if(!(tmpBall >= MIN_NUMBER && tmpBall <= MAX_NUMBER && tmpBall != arrResultSorted[i + 1])) {
-                    returnParameters.boldMessage = 'You should check your inputs';
-                    returnParameters.messageError = '- The result has either alreadby been added or is incorrect !';
-                }
-                else
-                if(i < arrResultSorted.length - 1) hasDoublon(i + 1);
-            })(i);
-
-            if(returnParameters.messageError != "")  return res.view(view, returnParameters);
-
-            //donnee valide
-            // Verifier qu'il n'existe pas d'entree a la meme date au niveau de la BDD
-            Result.find({
-                name : "Tirage" + dateOfResult.toISOString()
-            }).done(function(err, arrayResult) {
-                    if(err) {
-                        view = "500";
-                        return res.view(view, returnParameters);
-                    }
-                    if(arrayResult.length != 0) {
-                        console.log("Resultat ignore car deja present BDD");
-                        returnParameters.boldMessage = 'You should eat fish';
-                        returnParameters.messageWarning = ' - The result has already been added !';
-
-                        return res.view(view, returnParameters);
-                    }
-
-                    var resultLine = {
-                        name: "Tirage" + dateOfResult.toISOString(),
-                        resultDate: dateOfResult,
-                        type: "resultatLoto",
-                        firstNumber: arrResult[0],
-                        secondNumber: arrResult[1],
-                        thirdNumber: arrResult[2],
-                        fourthNumber: arrResult[3],
-                        fifthNumber: arrResult[4],
-                        sixthNumber: arrResult[5]
-                    };
-
-                    // procéder à au processus d'insertion au niveau de la bdd
-                    Result.create(resultLine).done(function(err, result) {
-                        if(!err) {
-                            // la creation de la ligne s'est bien passée
-                            console.log("Result successfully created " + result);
-
-                            // on retourne sur la page avec un message de succes
-
-                            returnParameters.boldMessage = 'You\'re great';
-                            returnParameters.messageSuccess = ' - The result has been successfully added !';
-
-
-                            //var util = require('util');
-                            //console.log(util.inspect(returnParameters, false, null));
-                            console.log("On sort");
-                            return res.view(view, returnParameters);
-                        }
-                        else {
-                            view = "500";
-                            return res.view(view, returnParameters);
-                        }
-                    });
-                });
-        }
-
-        */
-
+        var ballKeyToInsert = [];
+        var ballToInsert = {};
+        // constitution du tableau d'objet ball a creer
+        Ball.splitToBall(arrResult, ballToInsert, ballKeyToInsert);
+        //Ball.createBall(ballKeyToInsert, ballToInsert);
 
         Result.insertResult({
                 paramDateOfResult: req.param('dateResult'),
                 dateOfResult: new Date(req.param('dateResult')),
-                arrResult: [req.param('firstBall'), req.param('secondBall'),
-                    req.param('thirdBall'), req.param('fourthBall'), req.param('fifthBall'), req.param('sixthBall')]
+                arrResult: arrResult
             },
             "addresult/index",
             {
@@ -160,26 +54,21 @@ module.exports = {
             {
                 source: 'single',
                 boldMessage: 'You should check your inputs',
-                messageError: '- The result has either alreadby been added or is incorrect !',
+                messageError: '- The result has either already been added or is incorrect !',
                 messageSuccess: '',
                 messageWarning: '',
             },
             {
                 source: 'single',
                 boldMessage: 'You should eat fish',
-                messageWarning: '- The result has either alreadby been added or is incorrect !',
+                messageWarning: '- The result has either already been added or is incorrect !',
                 messageSuccess: '',
                 messageError: ''
             },
             "500",
-            res);
-
-
-        //var util = require('util');
-        //console.log(util.inspect(returnPage, false, null));
-
-        //return res.view(returnPage.view, returnPage.returnParameters);
-
+            res, function() {
+                Ball.createOrUpdateBall(ballKeyToInsert, ballToInsert);
+            });
     },
 
     index: function(req, res) {
@@ -199,165 +88,106 @@ module.exports = {
     importFile: function (req, res) {
         var MIN_NUMBER = sails.config.configLoto.MIN_NUMBER;
         var MAX_NUMBER = sails.config.configLoto.MAX_NUMBER;
+
+        var util = require('util');
         var fs = require('fs');
-        //var nameResult = [];
-        var entete = true;
-        var nbInserted = [];
+
+        var entete = false; // todo a prendre en compte cote front par une checkbox
+
+        var resultDateToImport = [];
+        var ballKeyToInsert = [];
+        var ballToInsert = {};
 
         var arrayFile = fs.readFileSync(req.files.resultFile.path).toString().split('\n');
-        arrayFile.shift(); // Suppression de la 1ère ligne entete
+        if(entete) arrayFile.shift(); // Suppression de la 1ère ligne entete
+        if(arrayFile[arrayFile.length - 1].trim() == "") arrayFile.pop();
 
-        Result.find({}).done(function(err, arrayResult) {
-            if(err) {
-                return res.view('500');
-            }
-            var i = 0;
-            var arrayOfResultDate = [];
-            (function controlData(i) {
-                arrayOfResultDate.push(arrayResult[i].name);
-                if(i < arrayResult.length - 1)
-                    controlData(i + 1);
+
+        //test VHK
+        var i = 0;
+        if(arrayFile.length > 0) {
+
+            (function treatRecord(i) {
+                var arrResult = arrayFile[i].split(";");
+                var dateToCheck = new Date(arrResult.shift());
+                if(typeof dateToCheck != 'undefined')
+                    resultDateToImport.push({resultDate: dateToCheck});
+
+                // constitution du tableau d'objet ball a creer
+                Ball.splitToBall(arrResult, ballToInsert, ballKeyToInsert);
+
+
+                if(i < arrayFile.length - 1) treatRecord(i + 1);
             })(i);
 
+            // console.log(util.inspect(ballToInsert, false, null));
 
-            console.log(arrayOfResultDate);
+            // return res.json({hello: "world"});
 
-            // A verifier
-            i = 0;
-            var outPut = null;
-            (function checkNbField(i) {
+            var i = 0;
+            (function loadData(i) {
                 var arrResult = arrayFile[i].split(";");
-                // Verfication du nombre de donnees sur une ligne
-                if(arrResult.length != 7) {
-                    // gestion si moins ou plus de 7 données par ligne
-                    console.log("erreur nombre donnees par lignes");
-                    outPut = {
+                var dateOfResult = arrResult[0];
+                var firstNumber = arrResult[1];
+                var secondNumber = arrResult[2];
+                var thirdNumber = arrResult[3];
+                var fourthNumber = arrResult[4];
+                var fifthNumber = arrResult[5];
+                var sixthNumber = arrResult[6];
+
+                Result.insertResult({
+                        paramDateOfResult: dateOfResult,
+                        dateOfResult: new Date(dateOfResult),
+                        arrResult: [firstNumber, secondNumber,
+                            thirdNumber, fourthNumber, fifthNumber, sixthNumber]
+                    },
+                    "addresult/index",
+                    {
                         source: 'import',
-                        boldMessage: 'Incorrect file !',
+                        boldMessage:'You\'re great',
+                        messageSuccess: ' - The result has been successfully added !',
+                        messageWarning: '',
+                        messageError: ''
+                    },
+                    {
+                        source: 'import',
+                        boldMessage: 'You should check your inputs ' + i,
+                        messageError: '- The result has either already been added or is incorrect !',
                         messageSuccess: '',
                         messageWarning: '',
-                        messageError: ' - The file is incorrect (line: ' + arrayFile[i] + ', Database cleanup needed A !'
-                    };
-                    return;
-                }
-
-                var dateOfResult = new Date(arrResult[0]);
-                // controle de la date
-                if((dateOfResult == "Invalid Date")){ //||(datePush.indexOf(arrResult[0]) != -1)) {
-                    outPut = {
+                    },
+                    {
                         source: 'import',
-                        boldMessage: 'Incorrect file !',
+                        boldMessage: 'You should eat fish',
+                        messageWarning: '- The result has either already been added or is incorrect !',
                         messageSuccess: '',
-                        messageWarning: '',
-                        messageError: ' - The file is incorrect (line: ' + arrayFile[i] + ', Database cleanup needed B !'
-                    };
-                    return;
-                }
-                //datePush.push(arrResult[0]);
+                        messageError: ''
+                    },
+                    "500",
+                    res, function() {
+                        //Ball.createBall(ballKeyToInsert, ballToInsert);
+                    });
 
-                var resultToInsert = {
-                    name: "Tirage" + dateOfResult.toISOString(),
-                    resultDate: dateOfResult,
-                    type: "resultatLoto",
-                    firstNumber: arrResult[1],
-                    secondNumber: arrResult[2],
-                    thirdNumber: arrResult[3],
-                    fourthNumber: arrResult[4],
-                    fifthNumber: arrResult[5],
-                    sixthNumber: arrResult[6]
-                }
+                if(i < arrayFile.length - 1) loadData(i + 1);
+                else {
+                    if(resultDateToImport.length > 0) {
+                        Result.count(resultDateToImport).done(function(err, count) {
 
-                arrResult.shift;
-                // controle des valeurs transmises
-                arrResult.sort(function(first, second) {
-                    var parseFirst = parseInt(first);
-                    var parseSecond = parseInt(second);
-                    var resultSort = null;
-                    if(parseFirst < parseSecond)
-                        resultSort =  -1;
-                    if(parseFirst > parseSecond)
-                        resultSort = 1;
-                    if(parseFirst == parseSecond)
-                        resultSort = 0;
-                    return resultSort;
-                });
+                            // console.log("Comptage : " + count);
 
-                var j = 0;
-                var checkOk = false;
-                (function controlValue(j) {
-                    var tmpBall = arrResult[j];
-                    if((tmpBall < MIN_NUMBER || tmpBall > MAX_NUMBER) || (tmpBall == arrResult[j + 1])) {
-
-
-                        outPut = {
-                            source: 'import',
-                            boldMessage: 'Incorrect file !',
-                            messageSuccess: '',
-                            messageWarning: '',
-                            messageError: ' - The file is incorrect (line: ' + arrayFile[i] + ', Database cleanup needed Z !'
-
-                        };
-                        return;
-                    }
-                    if(j < arrResult.length - 1) {
-                        controlValue(j + 1);
-                    }
-                    else {
-                        checkOk = true;
-                    }
-                })(j);
-
-
-                if(checkOk) {
-
-                    console.log("Valeur de i " + i );
-                    console.log("Valeur de la chaine" + arrResult.toString() );
-
-                    // procéder à au processus d'insertion au niveau de la bdd
-                    if(arrayOfResultDate.indexOf(resultToInsert.name) == -1) {
-                        arrayOfResultDate.push(resultToInsert.name);
-                        Result.create(resultToInsert).done(function(err, result) {
-                            if(err) {
-                                // retourner erreur de creation
-                                return res.view('500');
+                            if(err) console.log(err);
+                            if(!err) {
+                                if(count == 0) {
+                                    Ball.cleanBall(ballKeyToInsert, function() {
+                                        Ball.createBall(ballKeyToInsert, ballToInsert);
+                                    });
+                                }
                             }
-                            // la creation de la ligne s'est bien passée
-                            console.log("Result successfully imported " + result);
-                            nbInserted.push(1);
                         });
                     }
-                    else {
-                        outPut =  {
-                            source: 'import',
-                            boldMessage: 'Incorrect file - duplicate entry !',
-                            messageSuccess: '',
-                            messageWarning: '',
-                            messageError: ' - The file is incorrect, Database cleanup needed Y !'
-                        }
-                        return;
-                    }
-                }
-
-                if(i < arrayFile.length - 1) {
-                    checkNbField(i + 1);
                 }
             })(i);
-
-            if(outPut == null) {
-                outPut = {
-                    source: 'import',
-                    boldMessage: 'Well done !',
-                    messageSuccess: ' - The file has been processed !',
-                    messageWarning: '',
-                    messageError: ''
-                }
-            }
-            else {
-                // system de rollback ?
-            }
-
-            return res.view('addresult/index', outPut);
-        });
+        }
     },
 
     /**
